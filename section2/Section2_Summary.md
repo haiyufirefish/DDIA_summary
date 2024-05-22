@@ -147,3 +147,22 @@ Its main purpose and contribution is to provide a **declarative** way to describ
 That is, compared with the network model, the query statement and execution path of the relational model are decoupled, and the **query optimizer** (Query Optimizer automatically determines the execution order and the index to be used) decouples the logic and implementation.
 
 For example: If you want to query your data set in a new way, you only need to create an index on the new field. Then when querying, you do not need to change your user code, the query optimizer will dynamically select the available indexes.
+
+
+
+### Document vs Relational
+
+Choose a data model based on data type
+
+|                             | Document Type                                                | Relational Type                                              |
+| --------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| Correspondence relationship | Data has a natural one-to-many, tree-shaped nesting relationship, such as resumes. | Many-to-one and many-to-many relationships can be processed through foreign keys + Join |
+| Code simplification         | If the data has a document structure, the document model is naturally suitable. Using the relational model will make modeling cumbersome and access complicated.  But it is not advisable to nest too deeply, because you can only manually specify the access path. | primary keys, indexes, and conditional filtering.            |
+| Join Support                | The support for Join is not very good.                       | The support is okay, but there are many difficulties in the implementation of Join. |
+| Schema flexibility          | weak schema, supports dynamic addition of fields             | strong schema, modification of schema is very costly         |
+| Access locality             | Access the entire document at one time, which is better. Only access part of the document, which is poor | Scattered in multiple tables.                                |
+
+For highly correlated data sets, it is strange to use document type expression, it is acceptable to use relational type, and it is most natural to use graph model.
+
+
+
