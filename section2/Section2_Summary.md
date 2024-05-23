@@ -166,3 +166,128 @@ For highly correlated data sets, it is strange to use document type expression, 
 
 
 
+### Schema flexibility in document models
+
+| Data Models     | Document Type                                                | Programming Language |                                            | Performance & Space                                          |
+| --------------- | ------------------------------------------------------------ | -------------------- | ------------------------------------------ | ------------------------------------------------------------ |
+| Schema on read  | There is no verification when writing, but dynamic parsing when reading. | weak                 | Dynamic, resolved at runtime               | Dynamic parsing when reading, poor performance. The type cannot be determined when writing, cannot be aligned, and space utilization is poor. |
+| Schema on write | Verification when writing, data aligned to schema            | strong               | Static, Static, determined at compile time | Performance and space usage are both better.                 |
+
+Features of document database usage scenarios:
+
+There are many types of data, but it is not appropriate to put a table for each.
+Data types and structures are determined externally, and you have no control over data changes.
+
+
+
+### Data locality at query time
+
+If you need all the content in the document at the same time, storing the documents sequentially will make access more efficient.
+
+But if you only need to access certain fields in the document, the document still needs to be loaded out in its entirety.
+
+But the use of this locality is not limited to document databases. Different databases will adjust the physical distribution of data to adapt to the locality of common access patterns for different scenarios.
+
+* Spanner allows tables to be declared embedded in parent tables - commonly used relational embedding (obtaining a document model-like structure)
+* HBase and Cassandra use column families to aggregate data - analytical
+* In the graph database, the points and outgoing edges are stored on one machine - graph traversal
+
+
+
+### Integration of relational and document types
+
+* MySQL and PostgreSQL began to support JSON natively. It can be understood that MySQL can understand the JSON type. For example, in complex formats such as Date, you can make a field a JSON type, modify a certain attribute of the Join field, and create an index on a certain attribute in the Json field.
+* RethinkDB supports relational-link Joins in queries
+
+Codd: nonsimple domains. In addition to simple types (numbers, strings), the values in the record can also be a nested relationship (table). This is much like SQL's support for XML and JSON.
+
+
+
+### Data query language
+
+Get all shark-like animals in the animal table.
+
+```sql
+function getSharks() {
+  var sharks = [];
+  for (var i = 0; i < animals.length; i++) {
+    if (animals[i].family === 'Sharks') {
+      sharks.push(animals[i]);
+    }
+  }
+  return sharks;
+}
+SELECT * FROM animals WHERE family = 'Sharks';
+```
+
+|                       | Declarative Language                                         | **Imperative Language**                                      |
+| --------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| Concept               | Describe control logic rather than execution flow            | Describe the execution process of the command and use a series of statements to continuously change the state |
+| Abstract              | High                                                         | Low                                                          |
+| Decoupling            | Decoupled from implementation. Can continuously optimize query engine performance | Deep coupling with implementation.                           |
+| Interpreter Execution | Lexical analysis → Syntax analysis → Semantic analysis<br/>Generate execution plan → Execution plan optimization | Lexical analysis → Syntax analysis → Semantic analysis<br/>Intermediate code generation → code optimization → target code generation |
+| Multi-threading       | Declarative has more multi-core potential and gives more room for runtime optimization. | Since the imperative style specifies the order of code execution, there is less room for optimization at compile time. |
+| Example               | SQL，CSS，XSL                                                | IMS，CODASYL C，C++，JS                                      |
+
+
+
+### Beyond the Database: Declarative on the Web
+
+Requirement: The background of the selected page turns blue.
+
+```Html
+<ul>
+  <li class="selected">
+    <p>Sharks</p>
+    <ul>
+      <li>Great White Shark</li>
+      <li>Tiger Shark</li>
+      <li>Hammerhead Shark</li>
+    </ul>
+  </li>
+  <li>
+    <p>Whales</p>
+    <ul>
+      <li>Blue Whale</li>
+      <li>Humpback Whale</li>
+      <li>Fin Whale</li>
+    </ul>
+  </li>
+</ul>
+```
+
+If using CSS, just (CSS selector):
+
+```CSS
+li.selected > p {
+  background-color: blue;
+}
+```
+
+If using XSL, just (XPath selector):
+
+```css
+<xsl:template match="li[@class='selected']/p">
+    <fo:block background-color="blue">
+        <xsl:apply-templates/>
+    </fo:block>
+</xsl:template>
+```
+
+But if using JavaScript (without resorting to the selector library mentioned above):
+
+```jsx
+var liElements = document.getElementsByTagName('li');
+for (var i = 0; i < liElements.length; i++) {
+  if (liElements[i].className === 'selected') {
+    var children = liElements[i].childNodes;
+    for (var j = 0; j < children.length; j++) {
+      var child = children[j];
+      if (child.nodeType === Node.ELEMENT_NODE && child.tagName === 'P') {
+        child.setAttribute('style', 'background-color: blue');
+      }
+    }
+  }
+}
+```
+
